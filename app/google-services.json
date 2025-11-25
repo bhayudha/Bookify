@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "267192505562",
+    "project_id": "bookify-f8f65",
+    "storage_bucket": "bookify-f8f65.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:267192505562:android:7d7388a6fed90705c5c1e3",
+        "android_client_info": {
+          "package_name": "com.example.bookify"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "267192505562-knko6uqdgrph81ull9a5b79qa122bsdv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.bookify",
+            "certificate_hash": "089350acd53509ffe64f7c5974d7003de2a784ce"
+          }
+        },
+        {
+          "client_id": "267192505562-uof9clbntquag2th1fisca8knnr0g3lv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA-j5arBIC9Eh7XAtxFgk4yi-ylZM1m2Yk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "267192505562-uof9clbntquag2th1fisca8knnr0g3lv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
