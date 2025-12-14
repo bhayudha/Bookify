@@ -1,31 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:background="#FFFFFF"
-    android:padding="16dp"
+    android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    android:fitsSystemWindows="true"
+    android:paddingTop="16dp"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp">
 
-    <!-- Logo Bookify -->
+    <!-- Logo -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center_vertical">
 
         <ImageView
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_book_logo" />
-
-        <TextView
-            android:layout_marginStart="8dp"
-            android:text="Bookify"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#1A5D6B"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_width="120dp"
+            android:layout_height="50dp"
+            android:src="@drawable/bookify_logo" />
     </LinearLayout>
 
     <!-- Search Bar -->
@@ -39,12 +33,12 @@
 
         <EditText
             android:id="@+id/edtSearch"
-            android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="@android:color/transparent"
             android:hint="Cari Judul Buku"
-            android:textSize="16dp" />
+            android:textSize="16sp" />
 
         <ImageView
             android:id="@+id/btnSearch"
@@ -65,8 +59,12 @@
     <!-- Book Grid -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvBooks"
-        android:layout_marginTop="20dp"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="20dp"
+        android:background="@android:color/white"
+        android:padding="8dp"
+        android:clipToPadding="false" />
 
 </LinearLayout>

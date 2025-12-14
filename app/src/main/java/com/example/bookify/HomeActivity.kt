@@ -5,11 +5,15 @@ import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
+import com.example.bookify.model.Book
+
 
 class HomeActivity : AppCompatActivity() {
 
@@ -27,6 +31,23 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            // padding kanan kiri manual 16dp
+            val horizontalPadding = 16 * v.resources.displayMetrics.density
+            val side = horizontalPadding.toInt()
+
+            v.setPadding(
+                systemBars.left + side,
+                systemBars.top,
+                systemBars.right + side,
+                0
+            )
+
+            insets
+        }
 
         rvBooks = findViewById(R.id.rvBooks)
         edtSearch = findViewById(R.id.edtSearch)
