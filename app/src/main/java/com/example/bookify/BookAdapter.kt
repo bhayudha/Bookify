@@ -23,7 +23,7 @@ class BookAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BookViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_book, parent, false)
+            .inflate(R.layout.item_book_grid, parent, false)
         return BookViewHolder(view)
     }
 
@@ -32,12 +32,13 @@ class BookAdapter(
 
         holder.tvTitle.text = book.title
         holder.tvAuthor.text = book.author
-        holder.tvRating.text = "⭐ ${book.rating}"
+        holder.tvRating.text = "⭐ ${String.format("%.1f", book.rating)}"
 
         Glide.with(holder.itemView.context)
             .load(book.imageUrl)
             .placeholder(R.drawable.ic_book_placeholder)
             .error(R.drawable.ic_book_placeholder)
+            .centerCrop()
             .into(holder.imgBook)
 
         holder.itemView.setOnClickListener {

@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <application
         android:allowBackup="true"
@@ -14,26 +18,42 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Bookify"
         android:usesCleartextTraffic="true">
+
+        <!-- Form Peminjaman -->
+        <activity
+            android:name=".BorrowActivity"
+            android:exported="false" />
+
+        <!-- Invoice -->
+        <activity
+            android:name=".InvoiceActivity"
+            android:exported="false" />
+
+        <!-- Detail Buku -->
         <activity
             android:name=".DetailBookActivity"
             android:exported="false" />
+
+        <!-- Home -->
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
+
+        <!-- Register -->
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
+
+        <!-- Launcher -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
-
-
 
 </manifest>

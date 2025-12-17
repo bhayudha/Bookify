@@ -2,15 +2,40 @@
 <resources>
 
     <style name="Theme.Bookify" parent="Theme.Material3.Light.NoActionBar">
-        <!-- Background putih full -->
+
+        <!-- Background -->
         <item name="android:windowBackground">@android:color/white</item>
 
-        <!-- Matikan ripple default -->
-        <item name="colorControlHighlight">@android:color/transparent</item>
-
-        <!-- Optional: biar konsisten -->
+        <!-- Status bar -->
         <item name="android:statusBarColor">@android:color/white</item>
         <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Ripple -->
+        <item name="colorControlHighlight">@android:color/transparent</item>
+
+        <!-- 🔥 TYPOGRAPHY MATERIAL (INI YANG PENTING) -->
+        <item name="textAppearanceHeadlineSmall">@style/TextHeadline</item>
+        <item name="textAppearanceBodyLarge">@style/TextBody</item>
+        <item name="textAppearanceBodyMedium">@style/TextBody</item>
+        <item name="textAppearanceLabelLarge">@style/TextButton</item>
+
+    </style>
+
+    <!-- JUDUL -->
+    <style name="TextHeadline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- ISI -->
+    <style name="TextBody" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- BUTTON -->
+    <style name="TextButton" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
 </resources>

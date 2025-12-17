@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -17,54 +18,60 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import android.widget.Button
 import android.widget.RadioButton
 import android.content.Intent
-
-
+import android.graphics.drawable.Drawable
+import androidx.core.content.ContextCompat
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var rvBooks: RecyclerView
     private lateinit var edtSearch: EditText
     private lateinit var btnSearch: ImageView
+    private lateinit var btnFilter: ImageView
+    private lateinit var btnPrevious: ImageView
+    private lateinit var btnNext: ImageView
+    private lateinit var tvPageInfo: TextView
+    private lateinit var tvPage1: TextView
+    private lateinit var tvPage2: TextView
+    private lateinit var tvPage3: TextView
+    private lateinit var tvPageDots: TextView
 
-    private val books = mutableListOf<Book>()
+    private val allBooks = mutableListOf<Book>()
+    private val displayBooks = mutableListOf<Book>()
     private lateinit var adapter: BookAdapter
 
-    private var startIndex = 0
+    private var currentPage = 1
+    private val booksPerPage = 15 // 3 kolom x 5 baris
+    private var totalPages = 1
+
     private var query = "novel"
-    private val maxResults = 20
+    private val maxResults = 40
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-            // padding kanan kiri manual 16dp
-            val horizontalPadding = 16 * v.resources.displayMetrics.density
-            val side = horizontalPadding.toInt()
-
-            v.setPadding(
-                systemBars.left + side,
-                systemBars.top,
-                systemBars.right + side,
-                0
-            )
-
-            insets
-        }
-        val btnFilter = findViewById<ImageView>(R.id.btnFilter)
-
-        btnFilter.setOnClickListener {
-            showFilterDialog()
-        }
-
-
+        // Inisialisasi views
         rvBooks = findViewById(R.id.rvBooks)
         edtSearch = findViewById(R.id.edtSearch)
         btnSearch = findViewById(R.id.btnSearch)
+        btnFilter = findViewById(R.id.btnFilter)
+        btnPrevious = findViewById(R.id.btnPrevious)
+        btnNext = findViewById(R.id.btnNext)
+        tvPageInfo = findViewById(R.id.tvPageInfo)
+        tvPage1 = findViewById(R.id.tvPage1)
+        tvPage2 = findViewById(R.id.tvPage2)
+        tvPage3 = findViewById(R.id.tvPage3)
+        tvPageDots = findViewById(R.id.tvPageDots)
 
-        adapter = BookAdapter(books) { book ->
+        // Setup window insets
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            insets
+        }
+
+        // Setup adapter
+        adapter = BookAdapter(displayBooks) { book ->
             val intent = Intent(this, DetailBookActivity::class.java)
             intent.putExtra("BOOK_TITLE", book.title)
             intent.putExtra("BOOK_AUTHOR", book.author)
@@ -77,32 +84,68 @@ class HomeActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-
-
-        rvBooks.layoutManager = GridLayoutManager(this, 2)
+        rvBooks.layoutManager = GridLayoutManager(this, 3)
         rvBooks.adapter = adapter
+        rvBooks.setHasFixedSize(true)
 
-
-
-
+        // Search listener
         btnSearch.setOnClickListener {
             query = edtSearch.text.toString().ifEmpty { "novel" }
-            startIndex = 0
-            books.clear()
+            currentPage = 1
+            allBooks.clear()
+            displayBooks.clear()
             loadBooks()
         }
 
+        // Filter listener
+        btnFilter.setOnClickListener {
+            showFilterDialog()
+        }
+
+        // Pagination listeners
+        btnPrevious.setOnClickListener {
+            if (currentPage > 1) {
+                currentPage--
+                updateDisplayedBooks()
+                rvBooks.smoothScrollToPosition(0)
+            }
+        }
+
+        btnNext.setOnClickListener {
+            if (currentPage < totalPages) {
+                currentPage++
+                updateDisplayedBooks()
+                rvBooks.smoothScrollToPosition(0)
+            } else {
+                loadBooks()
+            }
+        }
+
+        // Page number click listeners
+        tvPage1.setOnClickListener { goToPage(1) }
+        tvPage2.setOnClickListener { goToPage(2) }
+        tvPage3.setOnClickListener { goToPage(3) }
+
         loadBooks()
-        setupPagination()
+    }
+
+    private fun goToPage(page: Int) {
+        if (page <= totalPages) {
+            currentPage = page
+            updateDisplayedBooks()
+            rvBooks.smoothScrollToPosition(0)
+        }
     }
 
     private fun loadBooks() {
-        val url =
-            "https://www.googleapis.com/books/v1/volumes?q=$query&startIndex=$startIndex&maxResults=$maxResults"
+        val startIndex = allBooks.size
+        val url = "https://www.googleapis.com/books/v1/volumes?q=$query&startIndex=$startIndex&maxResults=$maxResults"
 
         val request = Request.Builder().url(url).build()
         OkHttpClient().newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {}
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("HomeActivity", "Failed to load books", e)
+            }
 
             override fun onResponse(call: Call, response: Response) {
                 val body = response.body?.string() ?: return
@@ -113,17 +156,14 @@ class HomeActivity : AppCompatActivity() {
                     val item = items.getJSONObject(i)
                     val volume = item.getJSONObject("volumeInfo")
 
-                    // 🔥 FIX URL IMAGE (HTTP → HTTPS)
-                    val imageUrlRaw =
-                        volume.optJSONObject("imageLinks")?.optString("thumbnail") ?: ""
-
+                    val imageUrlRaw = volume.optJSONObject("imageLinks")?.optString("thumbnail") ?: ""
                     val imageUrl = imageUrlRaw.replace("http://", "https://")
 
                     val book = Book(
                         title = volume.optString("title"),
                         author = volume.optJSONArray("authors")?.optString(0) ?: "Unknown",
                         rating = volume.optDouble("averageRating", 4.5),
-                        imageUrl = imageUrl, // ⬅️ PAKAI YANG SUDAH DIFIX
+                        imageUrl = imageUrl,
                         description = volume.optString("description", "Deskripsi tidak tersedia"),
                         publishedDate = volume.optString("publishedDate", "-"),
                         publisher = volume.optString("publisher", "-"),
@@ -131,24 +171,89 @@ class HomeActivity : AppCompatActivity() {
                         language = volume.optString("language", "-")
                     )
 
-                    books.add(book)
+                    allBooks.add(book)
                 }
 
-
-                runOnUiThread { adapter.notifyDataSetChanged() }
+                runOnUiThread {
+                    updateDisplayedBooks()
+                }
             }
         })
     }
 
-    private fun setupPagination() {
-        rvBooks.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                if (!rv.canScrollVertically(1)) {
-                    startIndex += maxResults
-                    loadBooks()
-                }
+    private fun updateDisplayedBooks() {
+        totalPages = (allBooks.size + booksPerPage - 1) / booksPerPage
+
+        val startIndex = (currentPage - 1) * booksPerPage
+        val endIndex = minOf(startIndex + booksPerPage, allBooks.size)
+
+        displayBooks.clear()
+        if (startIndex < allBooks.size) {
+            displayBooks.addAll(allBooks.subList(startIndex, endIndex))
+        }
+
+        adapter.notifyDataSetChanged()
+
+        // Update page info
+        tvPageInfo.text = "Hal $currentPage dari $totalPages"
+
+        // Update page numbers
+        updatePageNumbers()
+
+        // Update button states
+        btnPrevious.isEnabled = currentPage > 1
+        btnPrevious.alpha = if (currentPage > 1) 1.0f else 0.3f
+
+        btnNext.isEnabled = currentPage < totalPages || allBooks.size % maxResults == 0
+        btnNext.alpha = if (btnNext.isEnabled) 1.0f else 0.3f
+    }
+
+    private fun updatePageNumbers() {
+        val bgActive = ContextCompat.getDrawable(this, R.drawable.bg_page_active)
+        val bgInactive = ContextCompat.getDrawable(this, R.drawable.bg_page_inactive)
+
+        // Reset all pages
+        tvPage1.background = bgInactive
+        tvPage1.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+        tvPage2.background = bgInactive
+        tvPage2.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+        tvPage3.background = bgInactive
+        tvPage3.setTextColor(ContextCompat.getColor(this, android.R.color.darker_gray))
+
+        // Update based on current page
+        when (currentPage) {
+            1 -> {
+                tvPage1.background = bgActive
+                tvPage1.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+                tvPage1.text = "1"
+                tvPage2.text = "2"
+                tvPage3.text = "3"
             }
-        })
+            2 -> {
+                tvPage2.background = bgActive
+                tvPage2.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+                tvPage1.text = "1"
+                tvPage2.text = "2"
+                tvPage3.text = "3"
+            }
+            3 -> {
+                tvPage3.background = bgActive
+                tvPage3.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+                tvPage1.text = "1"
+                tvPage2.text = "2"
+                tvPage3.text = "3"
+            }
+            else -> {
+                tvPage2.background = bgActive
+                tvPage2.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+                tvPage1.text = (currentPage - 1).toString()
+                tvPage2.text = currentPage.toString()
+                tvPage3.text = (currentPage + 1).toString()
+            }
+        }
+
+        // Show dots if more pages
+        tvPageDots.visibility = if (totalPages > 3) android.view.View.VISIBLE else android.view.View.GONE
     }
 
     private fun showFilterDialog() {
@@ -162,22 +267,14 @@ class HomeActivity : AppCompatActivity() {
 
         btnApply.setOnClickListener {
             when {
-                rbRating.isChecked -> {
-                    books.sortBy { book: Book ->
-                        book.title
-                    }
-                }
-                rbTitle.isChecked -> {
-                    books.sortBy { book: Book ->
-                        book.title
-                    }
-                }
+                rbRating.isChecked -> allBooks.sortByDescending { it.rating }
+                rbTitle.isChecked -> allBooks.sortBy { it.title }
             }
-            adapter.notifyDataSetChanged()
+            currentPage = 1
+            updateDisplayedBooks()
             dialog.dismiss()
         }
 
         dialog.show()
     }
-
 }
