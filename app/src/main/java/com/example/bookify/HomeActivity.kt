@@ -13,6 +13,11 @@ import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 import com.example.bookify.model.Book
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import android.widget.Button
+import android.widget.RadioButton
+import android.content.Intent
+
 
 
 class HomeActivity : AppCompatActivity() {
@@ -48,14 +53,37 @@ class HomeActivity : AppCompatActivity() {
 
             insets
         }
+        val btnFilter = findViewById<ImageView>(R.id.btnFilter)
+
+        btnFilter.setOnClickListener {
+            showFilterDialog()
+        }
+
 
         rvBooks = findViewById(R.id.rvBooks)
         edtSearch = findViewById(R.id.edtSearch)
         btnSearch = findViewById(R.id.btnSearch)
 
-        adapter = BookAdapter(books)
+        adapter = BookAdapter(books) { book ->
+            val intent = Intent(this, DetailBookActivity::class.java)
+            intent.putExtra("BOOK_TITLE", book.title)
+            intent.putExtra("BOOK_AUTHOR", book.author)
+            intent.putExtra("BOOK_IMAGE", book.imageUrl)
+            intent.putExtra("BOOK_DESC", book.description)
+            intent.putExtra("BOOK_DATE", book.publishedDate)
+            intent.putExtra("BOOK_PUBLISHER", book.publisher)
+            intent.putExtra("BOOK_PAGE", book.pageCount)
+            intent.putExtra("BOOK_LANG", book.language)
+            startActivity(intent)
+        }
+
+
+
         rvBooks.layoutManager = GridLayoutManager(this, 2)
         rvBooks.adapter = adapter
+
+
+
 
         btnSearch.setOnClickListener {
             query = edtSearch.text.toString().ifEmpty { "novel" }
@@ -85,14 +113,27 @@ class HomeActivity : AppCompatActivity() {
                     val item = items.getJSONObject(i)
                     val volume = item.getJSONObject("volumeInfo")
 
+                    // 🔥 FIX URL IMAGE (HTTP → HTTPS)
+                    val imageUrlRaw =
+                        volume.optJSONObject("imageLinks")?.optString("thumbnail") ?: ""
+
+                    val imageUrl = imageUrlRaw.replace("http://", "https://")
+
                     val book = Book(
                         title = volume.optString("title"),
                         author = volume.optJSONArray("authors")?.optString(0) ?: "Unknown",
                         rating = volume.optDouble("averageRating", 4.5),
-                        imageUrl = volume.optJSONObject("imageLinks")?.optString("thumbnail") ?: ""
+                        imageUrl = imageUrl, // ⬅️ PAKAI YANG SUDAH DIFIX
+                        description = volume.optString("description", "Deskripsi tidak tersedia"),
+                        publishedDate = volume.optString("publishedDate", "-"),
+                        publisher = volume.optString("publisher", "-"),
+                        pageCount = volume.optInt("pageCount", 0),
+                        language = volume.optString("language", "-")
                     )
+
                     books.add(book)
                 }
+
 
                 runOnUiThread { adapter.notifyDataSetChanged() }
             }
@@ -109,4 +150,34 @@ class HomeActivity : AppCompatActivity() {
             }
         })
     }
+
+    private fun showFilterDialog() {
+        val dialog = BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.bottom_sheet_filter, null)
+        dialog.setContentView(view)
+
+        val rbRating = view.findViewById<RadioButton>(R.id.rbRating)
+        val rbTitle = view.findViewById<RadioButton>(R.id.rbTitle)
+        val btnApply = view.findViewById<Button>(R.id.btnApply)
+
+        btnApply.setOnClickListener {
+            when {
+                rbRating.isChecked -> {
+                    books.sortBy { book: Book ->
+                        book.title
+                    }
+                }
+                rbTitle.isChecked -> {
+                    books.sortBy { book: Book ->
+                        book.title
+                    }
+                }
+            }
+            adapter.notifyDataSetChanged()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 }

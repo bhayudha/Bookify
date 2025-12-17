@@ -1,9 +1,16 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Bookify" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Bookify" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Background putih full -->
+        <item name="android:windowBackground">@android:color/white</item>
+
+        <!-- Matikan ripple default -->
+        <item name="colorControlHighlight">@android:color/transparent</item>
+
+        <!-- Optional: biar konsisten -->
+        <item name="android:statusBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
-    <style name="Theme.Bookify" parent="Base.Theme.Bookify" />
 </resources>

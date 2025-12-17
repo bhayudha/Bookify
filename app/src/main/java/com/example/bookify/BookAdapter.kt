@@ -9,14 +9,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.bookify.model.Book
 
-class BookAdapter(private val books: List<Book>) :
-    RecyclerView.Adapter<BookAdapter.BookViewHolder>() {
+class BookAdapter(
+    private val books: List<Book>,
+    private val onItemClick: (Book) -> Unit
+) : RecyclerView.Adapter<BookAdapter.BookViewHolder>() {
 
-    inner class BookViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imgBook: ImageView = view.findViewById(R.id.imgBook)
-        val tvTitle: TextView = view.findViewById(R.id.tvTitle)
-        val tvAuthor: TextView = view.findViewById(R.id.tvAuthor)
-        val tvRating: TextView = view.findViewById(R.id.tvRating)
+    inner class BookViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val imgBook: ImageView = itemView.findViewById(R.id.imgBook)
+        val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
+        val tvAuthor: TextView = itemView.findViewById(R.id.tvAuthor)
+        val tvRating: TextView = itemView.findViewById(R.id.tvRating)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BookViewHolder {
@@ -25,18 +27,23 @@ class BookAdapter(private val books: List<Book>) :
         return BookViewHolder(view)
     }
 
-    override fun getItemCount() = books.size
-
     override fun onBindViewHolder(holder: BookViewHolder, position: Int) {
         val book = books[position]
 
         holder.tvTitle.text = book.title
         holder.tvAuthor.text = book.author
-        holder.tvRating.text = "${book.rating} ★"
+        holder.tvRating.text = "⭐ ${book.rating}"
 
         Glide.with(holder.itemView.context)
             .load(book.imageUrl)
-            .centerCrop()
+            .placeholder(R.drawable.ic_book_placeholder)
+            .error(R.drawable.ic_book_placeholder)
             .into(holder.imgBook)
+
+        holder.itemView.setOnClickListener {
+            onItemClick(book)
+        }
     }
+
+    override fun getItemCount(): Int = books.size
 }
